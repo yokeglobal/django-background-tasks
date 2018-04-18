@@ -1,1 +1,3 @@
 mock
+django-coverage
+coverage
