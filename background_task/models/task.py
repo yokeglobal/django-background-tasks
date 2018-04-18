@@ -176,6 +176,9 @@ class Task(models.Model):
 
     objects = TaskManager()
 
+    class Meta:
+        app_label = "background_task"
+
     def locked_by_pid_running(self):
         """
         Check if the locked_by process is still running.

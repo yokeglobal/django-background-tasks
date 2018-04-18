@@ -95,6 +95,9 @@ class CompletedTask(models.Model):
 
     objects = CompletedTaskQuerySet.as_manager()
 
+    class Meta:
+        app_label = "background_task"
+
     def locked_by_pid_running(self):
         """
         Check if the locked_by process is still running.
