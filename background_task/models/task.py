@@ -15,9 +15,9 @@ from django.utils import timezone
 from django.utils.six import python_2_unicode_compatible
 
 from background_task.exceptions import InvalidTaskError
-from background_task.models import CompletedTask
 from background_task.settings import app_settings
 from background_task.signals import task_failed, task_rescheduled
+
 
 logger = logging.getLogger(__name__)
 
@@ -258,6 +258,7 @@ class Task(models.Model):
         '''
         Returns a new CompletedTask instance with the same values
         '''
+        from background_task.models import CompletedTask
         completed_task = CompletedTask(
             task_name=self.task_name,
             task_params=self.task_params,
