@@ -55,6 +55,11 @@ class CompletedTaskQuerySet(models.QuerySet):
 class CompletedTask(models.Model):
     # the "name" of the task/function to be run
     task_name = models.CharField(max_length=190, db_index=True)
+
+    # additional fields to query tasks from outside.
+    task_uid = models.CharField(max_length=50, db_index=True)
+    task_group = models.CharField(max_length=50, db_index=True)
+
     # the json encoded parameters to pass to the task
     task_params = models.TextField()
     # a sha1 hash of the name and params, to lookup already scheduled tasks

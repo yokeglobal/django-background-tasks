@@ -86,7 +86,8 @@ class TaskManager(models.Manager):
         qs = self.get_queryset()
         return qs.filter(failed_at__isnull=False)
 
-    def new_task(self, task_name, args=None, kwargs=None,
+    def new_task(self, task_name, task_uid=None, task_group=None,
+                 args=None, kwargs=None,
                  run_at=None, priority=0, queue=None, verbose_name=None,
                  creator=None, repeat=None, repeat_until=None,
                  remove_existing_tasks=False):
@@ -104,6 +105,8 @@ class TaskManager(models.Manager):
         if remove_existing_tasks:
             Task.objects.filter(task_hash=task_hash, locked_at__isnull=True).delete()
         return Task(task_name=task_name,
+                    task_uid=task_uid,
+                    task_group=task_group,
                     task_params=task_params,
                     task_hash=task_hash,
                     priority=priority,
@@ -132,6 +135,11 @@ class TaskManager(models.Manager):
 class Task(models.Model):
     # the "name" of the task/function to be run
     task_name = models.CharField(max_length=190, db_index=True)
+
+    # additional fields to query tasks from outside.
+    task_uid = models.CharField(max_length=50, db_index=True)
+    task_group = models.CharField(max_length=50, db_index=True)
+
     # the json encoded parameters to pass to the task
     task_params = models.TextField()
     # a sha1 hash of the name and params, to lookup already scheduled tasks

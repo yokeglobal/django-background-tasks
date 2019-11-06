@@ -88,7 +88,7 @@ class Tasks(object):
         self._bg_runner = bg_runner
         self._pool_runner = PoolRunner(bg_runner, app_settings.BACKGROUND_TASK_ASYNC_THREADS)
 
-    def background(self, name=None, schedule=None, queue=None,
+    def background(self, name=None, schedule=None, task_uid=None, task_group=None, queue=None,
                    remove_existing_tasks=False):
         '''
         decorator to turn a regular function into
@@ -107,7 +107,7 @@ class Tasks(object):
             _name = name
             if not _name:
                 _name = '%s.%s' % (fn.__module__, fn.__name__)
-            proxy = self._task_proxy_class(_name, fn, schedule, queue,
+            proxy = self._task_proxy_class(_name, fn, schedule, task_uid, task_group, queue,
                                            remove_existing_tasks, self._runner)
             self._tasks[_name] = proxy
             return proxy
@@ -213,12 +213,12 @@ class DBTaskRunner(object):
     def __init__(self):
         self.worker_name = str(os.getpid())
 
-    def schedule(self, task_name, args, kwargs, run_at=None,
+    def schedule(self, task_name, task_uid, task_group, args, kwargs, run_at=None,
                  priority=0, action=TaskSchedule.SCHEDULE, queue=None,
                  verbose_name=None, creator=None,
                  repeat=None, repeat_until=None, remove_existing_tasks=False):
         '''Simply create a task object in the database'''
-        task = Task.objects.new_task(task_name, args, kwargs, run_at, priority,
+        task = Task.objects.new_task(task_name, task_uid, task_group, args, kwargs, run_at, priority,
                                      queue, verbose_name, creator, repeat,
                                      repeat_until, remove_existing_tasks)
         if action != TaskSchedule.SCHEDULE:
@@ -268,10 +268,12 @@ class DBTaskRunner(object):
 
 @python_2_unicode_compatible
 class TaskProxy(object):
-    def __init__(self, name, task_function, schedule, queue, remove_existing_tasks, runner):
+    def __init__(self, name, task_function, schedule, task_uid, task_group, queue, remove_existing_tasks, runner):
         self.name = name
         self.now = self.task_function = task_function
         self.runner = runner
+        self.task_uid = task_uid
+        self.task_group = task.group
         self.schedule = TaskSchedule.create(schedule)
         self.queue = queue
         self.remove_existing_tasks = remove_existing_tasks
@@ -290,7 +292,7 @@ class TaskProxy(object):
         repeat_until = kwargs.pop('repeat_until', None)
         remove_existing_tasks =  kwargs.pop('remove_existing_tasks', self.remove_existing_tasks)
 
-        return self.runner.schedule(self.name, args, kwargs, run_at, priority,
+        return self.runner.schedule(self.name, self.task_uid, self.task.group, args, kwargs, run_at, priority,
                                     action, queue, verbose_name, creator,
                                     repeat, repeat_until,
                                     remove_existing_tasks)
