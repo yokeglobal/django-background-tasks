@@ -148,12 +148,13 @@ class TaskSchedule(object):
         self._action = action
 
     @classmethod
-    def create(self, schedule):
+    def create(self, schedule, task_uid=None, task_group=None):
         if isinstance(schedule, TaskSchedule):
             return schedule
         priority = None
         run_at = None
         action = None
+
 
         if schedule:
             if isinstance(schedule, (int, timedelta, datetime)):
@@ -221,6 +222,8 @@ class DBTaskRunner(object):
         task = Task.objects.new_task(task_name, task_uid, task_group, args, kwargs, run_at, priority,
                                      queue, verbose_name, creator, repeat,
                                      repeat_until, remove_existing_tasks)
+
+
         if action != TaskSchedule.SCHEDULE:
             task_hash = task.task_hash
             now = timezone.now()
@@ -229,7 +232,7 @@ class DBTaskRunner(object):
             if queue:
                 existing = existing.filter(queue=queue)
             if action == TaskSchedule.RESCHEDULE_EXISTING:
-                updated = existing.update(run_at=run_at, priority=priority)
+                updated = existing.update(run_at=run_at, priority=priority, task_uid=task_uid, task_group=task_group)
                 if updated:
                     return
             elif action == TaskSchedule.CHECK_EXISTING:
@@ -274,7 +277,7 @@ class TaskProxy(object):
         self.runner = runner
         self.task_uid = task_uid
         self.task_group = task_group
-        self.schedule = TaskSchedule.create(schedule)
+        self.schedule = TaskSchedule.create(schedule, task_uid=task_uid, task_group=task_group)
         self.queue = queue
         self.remove_existing_tasks = remove_existing_tasks
 

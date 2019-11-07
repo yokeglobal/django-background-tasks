@@ -102,6 +102,11 @@ class TaskManager(models.Manager):
         task_params = json.dumps((args, kwargs), sort_keys=True)
         s = "%s%s" % (task_name, task_params)
         task_hash = sha1(s.encode('utf-8')).hexdigest()
+
+        # get task uid and group
+        task_uid = kwargs['task_uid'] if 'task_uid' in kwargs else task_uid
+        task_group = kwargs['task_group'] if 'task_group' in kwargs else task_group
+
         if remove_existing_tasks:
             Task.objects.filter(task_hash=task_hash, locked_at__isnull=True).delete()
         return Task(task_name=task_name,
