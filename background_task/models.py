@@ -137,8 +137,8 @@ class Task(models.Model):
     task_name = models.CharField(max_length=190, db_index=True)
 
     # additional fields to query tasks from outside.
-    task_uid = models.CharField(max_length=50, db_index=True, default=None)
-    task_group = models.CharField(max_length=50, db_index=True, default=None)
+    task_uid = models.CharField(max_length=50, db_index=True, default=None, null=True)
+    task_group = models.CharField(max_length=50, db_index=True, default=None, null=True)
 
     # the json encoded parameters to pass to the task
     task_params = models.TextField()
