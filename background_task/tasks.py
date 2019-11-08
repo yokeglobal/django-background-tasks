@@ -40,6 +40,12 @@ def bg_runner(proxy_task, task=None, *args, **kwargs):
                 task = task_qs[0]
         if func is None:
             raise BackgroundTaskError("Function is None, can't execute!")
+        
+        if 'task_group' in kwargs:
+            kwargs.pop('task_group')
+        if 'task_uid' in kwargs:
+            kwargs.pop('task_uid')
+
         func(*args, **kwargs)
 
         if task:
